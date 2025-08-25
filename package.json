@@ -6,7 +6,13 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "lerna run dev --parallel",
+    "setup": "npm install && npm run setup:api && npm run setup:web",
+    "setup:api": "cd packages/api && npm install",
+    "setup:web": "cd packages/web && npm install",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "cd packages/api && npm run dev",
+    "dev:web": "cd packages/web && npm run dev",
+    "db:sync": "cd packages/api && npm run db:sync",
     "build": "lerna run build",
     "test": "lerna run test",
     "api": "npm run dev --workspace=packages/api",

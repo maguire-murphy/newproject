@@ -24,6 +24,7 @@ router.post(
 );
 
 router.get('/', ExperimentController.list);
+router.get('/stats/overview', ExperimentController.getStatsOverview);
 router.get('/:id', ExperimentController.get);
 
 router.put(

@@ -16,6 +16,7 @@ import authRoutes from './routes/auth.routes';
 import experimentRoutes from './routes/experiment.routes';
 import projectRoutes from './routes/project.routes';
 import trackingRoutes from './routes/tracking.routes';
+import { responseWrapper, errorResponseWrapper } from './middleware/response.middleware';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -43,6 +44,9 @@ const limiter = rateLimit({
 
 app.use('/api/', limiter);
 
+// Response wrapper middleware (must be before routes)
+app.use(responseWrapper);
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/experiments', experimentRoutes);
@@ -55,12 +59,7 @@ app.get('/health', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  logger.error(err.stack);
-  res.status(err.status || 500).json({
-    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
-  });
-});
+app.use(errorResponseWrapper);
 
 // Start server
 const startServer = async () => {

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { AuthController } from '../controllers/simple-auth.controller';
-// import { authenticate } from '../middleware/auth';
+import { AuthController } from '../controllers/auth.controller';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
@@ -27,5 +27,9 @@ router.post(
 );
 
 router.post('/logout', AuthController.logout);
+
+router.post('/refresh', AuthController.refreshToken);
+
+router.get('/me', authenticate, AuthController.getCurrentUser);
 
 export default router;

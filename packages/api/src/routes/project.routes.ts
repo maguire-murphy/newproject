@@ -66,4 +66,42 @@ router.get('/:id', async (req: AuthRequest, res) => {
   }
 });
 
+// Temporary endpoint to create default projects for existing organizations
+router.post('/setup-defaults', authorize(UserRole.OWNER), async (req: AuthRequest, res) => {
+  try {
+    const org = req.organization!;
+    
+    // Check if organization already has projects
+    const existingProjects = await Project.findAll({
+      where: { organizationId: org.id }
+    });
+
+    if (existingProjects.length === 0) {
+      const { v4: uuidv4 } = require('uuid');
+      
+      const project = await Project.create({
+        id: uuidv4(),
+        name: 'Default Project',
+        domain: org.subdomain + '.com',
+        organizationId: org.id,
+        trackingId: `track_${uuidv4().slice(0, 8)}`,
+        isActive: true,
+      });
+
+      res.json({ 
+        message: 'Default project created successfully',
+        project 
+      });
+    } else {
+      res.json({ 
+        message: 'Organization already has projects',
+        projects: existingProjects 
+      });
+    }
+  } catch (error) {
+    console.error('Setup defaults error:', error);
+    res.status(500).json({ error: 'Failed to setup default project' });
+  }
+});
+
 export default router;

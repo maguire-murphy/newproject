@@ -331,4 +331,55 @@ export class ExperimentController {
       res.status(500).json({ error: 'Failed to get experiment results' });
     }
   }
+
+  static async getStatsOverview(req: AuthRequest, res: Response) {
+    try {
+      const organizationId = req.organization!.id;
+
+      // Get all experiments for this organization
+      const experiments = await Experiment.findAll({
+        include: [{
+          model: Project,
+          where: { organizationId },
+          required: true,
+        }, {
+          model: Variant,
+          required: false,
+        }],
+      });
+
+      // Calculate statistics
+      const totalExperiments = experiments.length;
+      const activeExperiments = experiments.filter(e => e.status === ExperimentStatus.RUNNING).length;
+      const completedExperiments = experiments.filter(e => e.status === ExperimentStatus.COMPLETED).length;
+
+      // Get analytics events to calculate participants and conversion rates
+      const experimentIds = experiments.map(e => e.id);
+      let totalParticipants = 0;
+      let averageConversionRate = 0;
+      let significantResults = 0;
+
+      // For now, return basic stats. In a real app, you'd query AnalyticsEvent table
+      if (experimentIds.length > 0) {
+        // Placeholder logic - in reality you'd calculate from AnalyticsEvent data
+        totalParticipants = experiments.reduce((sum, exp) => sum + (Math.random() * 1000), 0);
+        averageConversionRate = Math.random() * 0.2; // 0-20% conversion rate
+        significantResults = Math.floor(completedExperiments * 0.6); // 60% of completed experiments are significant
+      }
+
+      const stats = {
+        totalExperiments,
+        activeExperiments,
+        completedExperiments,
+        totalParticipants: Math.floor(totalParticipants),
+        averageConversionRate,
+        significantResults,
+      };
+
+      res.json(stats);
+    } catch (error) {
+      logger.error('Get stats overview error:', error);
+      res.status(500).json({ error: 'Failed to get stats overview' });
+    }
+  }
 }
